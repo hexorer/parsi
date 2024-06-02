@@ -10,6 +10,7 @@ target_sources(${PROJECT_NAME}-tests
         rtparser.cpp
         fixed_string.cpp
         parsi-c.cpp
+        extra_msgpack.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}-tests
