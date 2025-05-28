@@ -38,7 +38,7 @@ jobs:
         env:
           VCPKG_ROOT: C:\vcpkg
           VCPKG_DEFAULT_BINARY_CACHE: C:\vcpkg-binary-cache
-        run: cmake -S . --preset ${{matrix.config.preset}}
+        run: cmake -S . --preset ${{matrix.config.preset}} -DPARSI_BENCHMARK=ON
 
       - name: Build Debug
         run: cmake --build --preset ${{matrix.config.preset}} --config Debug
@@ -48,4 +48,4 @@ jobs:
 
       - name: Test
         run: |
-          ctest -C Release --preset windows-tests
+          ctest -C Debug --preset windows-tests

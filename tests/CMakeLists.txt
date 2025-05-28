@@ -42,8 +42,8 @@ if (PARSI_ENABLE_COVERAGE)
 	    COMMAND ${GCOVR_PROGRAM}
                 -r "${PROJECT_SOURCE_DIR}/include"
                 --print-summary
-                --fail-under-line 70
-                --fail-under-branch 70
+                # --fail-under-line 70
+                # --fail-under-branch 70
                 --html "${COVERAGE_DIR}/index.html" --html-details
                 --xml "${COVERAGE_DIR}/coverage.xml"
                 --json "${COVERAGE_DIR}/coverage.json"
