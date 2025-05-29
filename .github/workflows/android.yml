@@ -7,17 +7,17 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-and-test:
+  build:
     strategy:
       fail-fast: true
       matrix:
         config:
           - preset: android-x64
-            ndk_version: 26.3.11579264
+            ndk_version: 27.2.12479018
           - preset: android-arm
-            ndk_version: 26.3.11579264
+            ndk_version: 27.2.12479018
           - preset: android-arm64
-            ndk_version: 26.3.11579264
+            ndk_version: 27.2.12479018
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -42,7 +42,6 @@ jobs:
           key: ${{matrix.config.preset}}-${{hashFiles('vcpkg.json')}}
           path: /opt/vcpkg-binary-cache
 
-
       - uses: actions/setup-java@v1
         with:
           java-version: "11.x"
@@ -60,7 +59,7 @@ jobs:
           VCPKG_DEFAULT_BINARY_CACHE: /opt/vcpkg-binary-cache
           ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
           ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/${{matrix.config.ndk_version}}
-        run: cmake -S . --preset ${{matrix.config.preset}}
+        run: cmake -S . --preset ${{matrix.config.preset}} -DPARSI_TESTS=OFF -DPARSI_EXAMPLES=ON
 
       - name: Build Debug
         run: |
