@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Prepare
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup vcpkg
         working-directory: C:\
@@ -29,7 +29,7 @@ jobs:
           test -d vcpkg-binary-cache || mkdir vcpkg-binary-cache
 
       - name: Cache Vcpkg Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{matrix.config.preset}}-${{hashFiles('vcpkg.json')}}
           path: C:\vcpkg-binary-cache
