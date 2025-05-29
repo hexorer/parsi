@@ -20,7 +20,7 @@ jobs:
             ndk_version: 26.3.11579264
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install System Packages
         run: |
@@ -37,7 +37,7 @@ jobs:
           test -d /opt/vcpkg-binary-cache || mkdir /opt/vcpkg-binary-cache
 
       - name: Cache Vcpkg Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{matrix.config.preset}}-${{hashFiles('vcpkg.json')}}
           path: /opt/vcpkg-binary-cache

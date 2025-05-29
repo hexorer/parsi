@@ -15,7 +15,7 @@ jobs:
           - preset: linux-x64
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install System Packages
         run: |
@@ -35,7 +35,7 @@ jobs:
           test -d vcpkg-binary-cache || mkdir vcpkg-binary-cache
 
       - name: Cache Vcpkg Dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           key: ${{matrix.config.preset}}-${{hashFiles('vcpkg.json')}}
           path: /opt/vcpkg-binary-cache
@@ -63,7 +63,7 @@ jobs:
           cmake --build --preset ${{matrix.config.preset}} --target coverage
 
       - name: Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           token: ${{secrets.CODECOV_TOKEN}}
           files: build/${{matrix.config.preset}}/coverage/coverage.xml
@@ -74,11 +74,13 @@ jobs:
         if: false
         run: |
           cmake --build --preset ${{matrix.config.preset}} --target docs
-          mv build/${{matrix.config.preset}}/docs/sphinx _site
 
       - name: Upload Pages Artifacts
         if: false
-        uses: actions/upload-pages-artifact@v2
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/${{matrix.config.preset}}/docs/sphinx/
 
   deploy-docs:
     if: false && success() && github.ref == 'refs/heads/main'
@@ -96,4 +98,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2 
+        uses: actions/deploy-pages@v4
