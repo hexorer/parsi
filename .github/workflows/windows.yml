@@ -23,7 +23,7 @@ jobs:
         shell: bash
         run: |
           rm -rf vcpkg
-          git clone --single-branch --filter=blob:none https://github.com/Microsoft/vcpkg.git
+          git clone --single-branch https://github.com/Microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.bat
           ./vcpkg/vcpkg.exe --version
           test -d vcpkg-binary-cache || mkdir vcpkg-binary-cache
