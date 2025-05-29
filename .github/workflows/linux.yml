@@ -28,7 +28,7 @@ jobs:
         working-directory: /opt
         run: |
           rm -rf vcpkg
-          git clone --single-branch --filter=blob:none https://github.com/Microsoft/vcpkg.git
+          git clone --single-branch https://github.com/Microsoft/vcpkg.git
           ./vcpkg/bootstrap-vcpkg.sh
           ./vcpkg/vcpkg integrate install
           ./vcpkg/vcpkg --version
