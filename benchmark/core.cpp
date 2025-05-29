@@ -1,7 +1,6 @@
 #include <cassert>
 #include <ctime>
 #include <random>
-#include <format>
 #include <optional>
 
 #include <benchmark/benchmark.h>
@@ -50,9 +49,10 @@ public:
         }
     }
 
-    parsi_result_t operator()(std::string_view str) const
+    bool operator()(std::string_view str) const
     {
-        return parsi_parse(_compiled_parser, parsi_stream_t{.cursor = str.data(), .size = str.size()});
+        parsi_result_t result = parsi_parse(_compiled_parser, parsi_stream_t{.cursor = str.data(), .size = str.size()});
+        return result.is_valid;
     }
 
 private:
@@ -173,9 +173,9 @@ static auto parsi_c_color_from_string(std::string_view str) -> std::optional<Col
 {
     static thread_local Color color;
     static helpers::ParsiCParser parser = [] {
-        parsi_charset_t hex_charset = parsi_charset("0123456789abcdefABCDEF");
-        parsi_parser_t hex_charset_parser = parsi_expect_charset(hex_charset);
-        parsi_parser_t sequence_subparsers[] = {
+        static parsi_charset_t hex_charset = parsi_charset("0123456789abcdefABCDEF");
+        static parsi_parser_t hex_charset_parser = parsi_expect_charset(hex_charset);
+        static parsi_parser_t sequence_subparsers[] = {
             parsi_expect_char('#'),
             // a color code with 6 hex digits like `#C3A3BB` is equivalent to
             // Color{ .red = 0xC3, .green = 0xA3, .blue = 0xBB }
@@ -183,8 +183,8 @@ static auto parsi_c_color_from_string(std::string_view str) -> std::optional<Col
             parsi_expect_eos(),  // end of stream
             parsi_none()
         };
-        parsi_parser_t color_parser = parsi_combine_sequence(sequence_subparsers, nullptr);
-        parsi_extract_visitor_fn_t extract_visitor_fn = [](void* context, const char* str, size_t size) -> bool {
+        static parsi_parser_t color_parser = parsi_combine_sequence(sequence_subparsers, nullptr);
+        static parsi_extract_visitor_fn_t extract_visitor_fn = [](void* context, const char* str, size_t size) -> bool {
             auto color = reinterpret_cast<Color*>(context);
             // str's length is guaranteed to be 7, with first character being '#',
             // and the rest of them are guaranteed to be in hex_charset.
@@ -193,12 +193,11 @@ static auto parsi_c_color_from_string(std::string_view str) -> std::optional<Col
             color->blue = convert_hex_digit(str[5]) * 16 + convert_hex_digit(str[6]);
             return true;
         };
-        parsi_parser_t raw_parser = parsi_combine_extract(&color_parser, extract_visitor_fn, &color, nullptr, nullptr);
+        static parsi_parser_t raw_parser = parsi_combine_extract(&color_parser, extract_visitor_fn, &color, nullptr, nullptr);
         return helpers::ParsiCParser(parsi_alloc_parser(raw_parser));
     }();
 
-    parsi_result_t res = parser(str);
-    if (!res.is_valid)
+    if (!parser(str))
     {
         return std::nullopt;
     }
@@ -214,7 +213,12 @@ static void bench_color_hex(benchmark::State& state, auto&& parser)
     colors.reserve(1'000);
     for (std::size_t count = 0; count < colors.capacity(); ++count)
     {
-        colors.push_back(std::format("#{:02x}{:02x}{:02x}", std::rand()%256, std::rand()%256, std::rand()%256));
+        constexpr auto to_02x = [](std::uint8_t x) -> std::string {
+            constexpr auto hex_chr_arr = "0123456789abcdef";
+            return std::string("") + hex_chr_arr[x >> 4] + hex_chr_arr[x & 0x0f];
+        };
+        auto color = std::string("#") + to_02x(std::rand() % 256) + to_02x(std::rand() % 256) + to_02x(std::rand() % 256);
+        colors.push_back(std::move(color));
     }
 
     std::size_t byte_count = 0;

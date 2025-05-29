@@ -44,7 +44,7 @@ jobs:
         env:
           VCPKG_ROOT: /opt/vcpkg
           VCPKG_DEFAULT_BINARY_CACHE: /opt/vcpkg-binary-cache
-        run: cmake -S . --preset ${{matrix.config.preset}} -DPARSI_ENABLE_COVERAGE=ON -DPARSI_DOCS=ON
+        run: cmake -S . --preset ${{matrix.config.preset}} -DPARSI_ENABLE_COVERAGE=ON -DPARSI_BENCHMARK=ON -DPARSI_DOCS=ON
 
       - name: Build Debug
         run: |
@@ -54,13 +54,13 @@ jobs:
         run: |
           cmake --build --preset ${{matrix.config.preset}} --config Release
 
-      - name: Test Release
+      - name: Test
         run: |
-          ctest -C Release --preset linux-tests
+          ctest -C Debug --preset linux-tests
 
       - name: Generate Coverage
         run: |
-          cmake --build --preset ${{matrix.config.preset}} --target coverage
+          cmake --build --preset ${{matrix.config.preset}} --config Debug --target coverage
 
       - name: Codecov
         uses: codecov/codecov-action@v5
