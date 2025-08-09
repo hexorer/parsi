@@ -104,6 +104,19 @@ struct ExpectString {
     }
 };
 
+/**
+ * A parser that expects the stream to start with the given string view.
+ */
+struct ExpectStringView {
+    std::string_view expected;
+
+    [[nodiscard]] auto operator()(Stream stream) const noexcept -> Result
+    {
+        const bool starts_with = stream.as_string_view().starts_with(expected);
+        return Result{stream.advanced(starts_with * expected.size()), starts_with};
+    }
+};
+
 }  // namespace parsi::fn
 
 #endif  // PARSI_FN_EXPECT_HPP

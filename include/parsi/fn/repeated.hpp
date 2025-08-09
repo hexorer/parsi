@@ -28,8 +28,8 @@ struct Repeated {
 
     [[nodiscard]] constexpr auto operator()(Stream stream) const noexcept -> Result
     {
-        if (Max < Min || Max == 0) {
-            return Result{stream, true};
+        if (Max < Min) {
+            return Result{stream, false};
         }
 
         std::size_t count = 0;
@@ -37,7 +37,7 @@ struct Repeated {
         for (; count < Min; ++count) {
             const Result result = parser(stream);
             if (!result) [[unlikely]] {
-                return result;
+                return Result{stream, false};
             }
             stream = result.stream();
         }
@@ -70,25 +70,29 @@ struct RepeatedRanged {
 
     [[nodiscard]] constexpr auto operator()(Stream stream) const noexcept -> Result
     {
-        if (min > max) [[unlikely]] {
+        if (max < min) {
             return Result{stream, false};
         }
 
         std::size_t count = 0;
 
-        while (const Result result = parser(stream)) {
-            if (count > max) [[unlikely]] {
-                break;
+        for (; count < min; ++count) {
+            const Result result = parser(stream);
+            if (!result) [[unlikely]] {
+                return Result{stream, false};
             }
-
             stream = result.stream();
         }
 
-        if (count < min || max < count) [[unlikely]] {
-            return Result{stream, false};
+        for (; count <= max; ++count) {
+            const Result result = parser(stream);
+            if (!result) [[unlikely]] {
+                return Result{stream, true};
+            }
+            stream = result.stream();
         }
 
-        return Result{stream, true};
+        return Result{stream, false};
     }
 };
 

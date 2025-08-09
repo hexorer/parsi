@@ -41,11 +41,15 @@ private:
     [[nodiscard]] constexpr auto parse_rec(Stream stream) const noexcept -> Result
     {
         if constexpr (I == sizeof...(Fs)-1) {
-            return std::get<I>(parsers)(stream);
+            auto res = std::get<I>(parsers)(stream);
+            if (!res) {
+                return Result{stream, false};
+            }
+            return res;
         } else {
             auto res = std::get<I>(parsers)(stream);
             if (!res) {
-                return res;
+                return Result{stream, false};
             }
             return parse_rec<I+1>(res.stream());
         }
