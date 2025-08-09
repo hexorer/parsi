@@ -210,7 +210,7 @@ static parsi_result_t parsi_parse_impl(parsi_parser_t* parser, parsi_stream_t st
 
         case parsi_parser_type_anyof: {
             if (!parser->anyof.parsers) {
-                return parsi_result_t{ .is_valid = true, .stream = stream };
+                return parsi_result_t{ .is_valid = false, .stream = stream };
             }
 
             for (std::size_t index = 0; index < parser->anyof.size; ++index) {
