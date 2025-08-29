@@ -96,7 +96,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     parsi
-    GIT_REPOSITORY https://github.com/cthulhu-irl/parsi
+    GIT_REPOSITORY https://github.com/hexorer/parsi
     GIT_TAG main  # or v<version> like v0.1.0
 )
 FetchContent_MakeAvailable(parsi)
