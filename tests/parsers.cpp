@@ -134,7 +134,8 @@ TEST_CASE("complex composition")
     auto parser = pr::sequence(
         pr::expect("{"), pr::repeat(pr::expect(" ")),
         pr::extract(pr::expect("Hello!"), [](std::string_view str) { return str == "Hello!"; }),
-        pr::repeat(pr::expect(" ")), pr::expect("}"));
+        pr::repeat(pr::expect(" ")), pr::expect("}")
+    );
 
     CHECK(parser("{Hello!}"));
     CHECK(parser("{Hello! }"));
