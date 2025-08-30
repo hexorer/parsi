@@ -19,40 +19,40 @@ namespace parsi::fn {
  */
 template <is_parser... Fs>
 struct Sequence {
-    std::tuple<std::remove_cvref_t<Fs>...> parsers;
+    [[nodiscard]] constexpr auto operator()(Stream stream) const noexcept -> Result
+    {
+        return Result{stream, true};
+    }
+};
 
-    constexpr explicit Sequence(std::remove_cvref_t<Fs>... parsers) noexcept
-        : parsers(std::move(parsers)...)
+template <is_parser F>
+struct Sequence<F> {
+    F parser;
+
+    [[nodiscard]] constexpr auto operator()(Stream stream) const noexcept -> Result
+    {
+        return parser(stream);
+    }
+};
+
+template <is_parser F1, is_parser F2, is_parser... Fs>
+struct Sequence<F1, F2, Fs...> {
+    F1 parser;
+    Sequence<F2, Fs...> parsers;
+
+    constexpr explicit Sequence(F1 parser1, F2 parser2, Fs... parsers) noexcept
+        : parser(std::move(parser1))
+        , parsers(std::move(parser2), std::move(parsers)...)
     {
     }
 
     [[nodiscard]] constexpr auto operator()(Stream stream) const noexcept -> Result
     {
-        if constexpr (sizeof...(Fs) == 0) {
-            return Result{stream, true};
-        } else {
-            return parse_rec<0>(stream);
-        }
-    }
-
-private:
-    template <std::size_t I>
-        requires (I < sizeof...(Fs))
-    [[nodiscard]] constexpr auto parse_rec(Stream stream) const noexcept -> Result
-    {
-        if constexpr (I == sizeof...(Fs)-1) {
-            auto res = std::get<I>(parsers)(stream);
-            if (!res) {
-                return Result{stream, false};
-            }
+        auto res = parser(stream);
+        if (!res) [[unlikely]] {
             return res;
-        } else {
-            auto res = std::get<I>(parsers)(stream);
-            if (!res) {
-                return Result{stream, false};
-            }
-            return parse_rec<I+1>(res.stream());
         }
+        return parsers(res.stream());
     }
 };
 
