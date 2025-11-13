@@ -258,15 +258,15 @@ static void bench_digits(benchmark::State& state, auto&& parser)
 
     state.SetBytesProcessed(bytes_count);
 }
-BENCHMARK_CAPTURE(bench_digits, raw, [](parsi::Stream stream) {
-    const char* const str = stream.data();
-    const std::size_t size = stream.size();
-
+BENCHMARK_CAPTURE(bench_digits, raw, [](const char* str) -> const char* {
     std::size_t index = 0;
-    while (index < size && '0' <= str[index] && str[index] <= '9') {
-        ++index;
+    while (*str != '\0') {
+        if (*str < '0' || '9' < *str) {
+            return nullptr;
+        }
+        ++str;
     }
-    return parsi::Result{parsi::Stream(str, index), true};
+    return str;
 });
 BENCHMARK_CAPTURE(bench_digits, parsi, parsi::repeat(parsi::expect(parsi::CharRange{'0', '9'})));
 BENCHMARK_CAPTURE(bench_digits, parsi-c, helpers::ParsiCParser(
