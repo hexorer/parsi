@@ -143,6 +143,36 @@ TEST_CASE("peek")
     CHECK(parser("a").stream().as_string_view() == "a");
 }
 
+TEST_CASE("alters")
+{
+    auto parser = parsi::alterset(
+        parsi::alter(parsi::expect('.'), parsi::expect("hello")),
+        parsi::alter(parsi::expect(','), parsi::expect("there")),
+        parsi::alter(parsi::expect('.'), parsi::expect("where"))
+    );
+
+    CHECK(parser(".hello"));
+    CHECK(parser(".hello world"));
+    CHECK(parser(".hello dear"));
+    CHECK(not parser("."));
+    CHECK(not parser(".hell"));
+
+    CHECK(parser(",there"));
+    CHECK(parser(",there world"));
+    CHECK(parser(",there dear"));
+    CHECK(not parser(","));
+    CHECK(not parser(",ther"));
+
+    CHECK(not parser(".where"));
+
+    CHECK(not parser("hello"));
+    CHECK(not parser("there"));
+    CHECK(not parser("where"));
+
+    CHECK(parser(".hell").stream().as_string_view() == "hell");
+    CHECK(parser(",ther").stream().as_string_view() == "ther");
+}
+
 TEST_CASE("complex composition")
 {
     auto parser = pr::sequence(
