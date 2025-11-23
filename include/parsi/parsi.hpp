@@ -10,6 +10,7 @@
 #include "parsi/fn/expect.hpp"
 #include "parsi/fn/extract.hpp"
 #include "parsi/fn/optional.hpp"
+#include "parsi/fn/peek.hpp"
 #include "parsi/fn/repeated.hpp"
 #include "parsi/fn/sequence.hpp"
 #include "parsi/internal/optimizer.hpp"
@@ -194,6 +195,19 @@ template <is_parser F>
 [[nodiscard]] constexpr auto optional(F&& parser) noexcept
 {
     return internal::optimize(fn::Optional<std::remove_cvref_t<F>>{std::forward<F>(parser)});
+}
+
+/**
+ * Creates a parser that only checks whether
+ * the given `parser` can parse the current
+ * stream, but does not move the stream forward.
+ * 
+ * @see fn::Peek
+ */
+template <is_parser F>
+[[nodiscard]] constexpr auto peek(F&& parser) noexcept
+{
+    return internal::optimize(fn::Peek<std::remove_cvref_t<F>>{std::forward<F>(parser)});
 }
 
 }  // namespace parsi
