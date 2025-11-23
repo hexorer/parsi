@@ -129,6 +129,20 @@ TEST_CASE("extract")
                           [](std::string_view str) { return str == "not test"; })("test"));
 }
 
+TEST_CASE("peek")
+{
+    auto parser = pr::peek(pr::expect("x"));
+
+    CHECK(parser("x"));
+    CHECK(parser("x").stream().as_string_view() == "x");
+
+    CHECK(parser("xxa"));
+    CHECK(parser("xxa").stream().as_string_view() == "xxa");
+
+    CHECK(not parser("a"));
+    CHECK(parser("a").stream().as_string_view() == "a");
+}
+
 TEST_CASE("complex composition")
 {
     auto parser = pr::sequence(
