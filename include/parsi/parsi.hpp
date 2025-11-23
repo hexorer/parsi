@@ -6,6 +6,7 @@
 #include "parsi/charset.hpp"
 #include "parsi/fixed_string.hpp"
 #include "parsi/fn/anyof.hpp"
+#include "parsi/fn/alters.hpp"
 #include "parsi/fn/eos.hpp"
 #include "parsi/fn/expect.hpp"
 #include "parsi/fn/extract.hpp"
@@ -208,6 +209,32 @@ template <is_parser F>
 [[nodiscard]] constexpr auto peek(F&& parser) noexcept
 {
     return internal::optimize(fn::Peek<std::remove_cvref_t<F>>{std::forward<F>(parser)});
+}
+
+/**
+ * Creates an alternative case for the `alterset` (alternative set) combinator.
+ *
+ * On itself, passes the result of the `condition` parser to the `successor` parser
+ * if it was successful, otherwise returns the result of the `condition` parser.
+ * 
+ * @see fn::Alter
+ */
+template <is_parser ConditionF, is_parser SuccessorF>
+static constexpr auto alter(ConditionF&& condition, SuccessorF&& successor) {
+    return internal::optimize(fn::Alter<ConditionF, SuccessorF>(std::forward<ConditionF>(condition), std::forward<SuccessorF>(successor)));
+}
+
+/**
+ * Creates a parser out of the given alternatives (`fn::Alter` instances) where
+ * if the condition of an alternative fails, it goes to the next alternative,
+ * otherwise it passes the result's stream to that alternative's successor parser
+ * and returns its result regardless of failure or success.
+ * 
+ * @see fn::AlterSet
+ */
+template <is_parser ...Fs>
+static constexpr auto alterset(Fs&& ...alternatives) {
+    return internal::optimize(fn::AlterSet<Fs...>(std::forward<Fs&&>(alternatives)...));
 }
 
 }  // namespace parsi
